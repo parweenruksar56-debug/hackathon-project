@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exoplanet AI • NASA Space Apps 2026</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #080014;
+      --card: #12001f;
+      --accent: #d000ff;
+      --accent-glow: rgba(208,0,255,0.4);
+      --text: #e8d8ff;
+      --text-dim: #b090d0;
+      --green: #00ffaa;
+      --yellow: #ffcc00;
+      --red: #ff2d55;
+      --purple: #9d4edd;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: radial-gradient(circle at 20% 30%, #1a0033, var(--bg) 60%);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="10" cy="10" r="1" fill="white" opacity="0.07"/></svg>') repeat;
+      pointer-events: none;
+      animation: drift 120s linear infinite;
+    }
+    @keyframes drift { 0% { transform: translate(0,0); } 100% { transform: translate(-100px,-100px); } }
+
+    header {
+      background: rgba(8,0,20,0.75);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(208,0,255,0.18);
+      padding: 1.1rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky; top:0; z-index: 200;
+    }
+    .logo { font-size: 1.6rem; font-weight: 800; background: linear-gradient(90deg, #ff00cc, var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    nav a {
+      color: var(--text-dim);
+      text-decoration: none;
+      margin: 0 1.4rem;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    nav a:hover, nav a.active { color: white; text-shadow: 0 0 12px var(--accent); }
+
+    main { padding: 2.5rem 4rem; max-width: 1680px; margin: 0 auto; }
+    h1 {
+      font-size: 3.2rem;
+      background: linear-gradient(90deg, #ff00cc, var(--accent), #c026d3);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-align: center;
+      margin-bottom: 0.6rem;
+      text-shadow: 0 0 30px var(--accent-glow);
+    }
+    .subtitle { text-align: center; color: var(--text-dim); font-size: 1.2rem; margin-bottom: 3.5rem; letter-spacing: 0.5px; }
+
+    .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 2.2rem; }
+    .card {
+      background: linear-gradient(145deg, var(--card), #0c001a);
+      border: 1px solid rgba(157,78,221,0.28);
+      border-radius: 18px;
+      padding: 2rem;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6), inset 0 0 30px rgba(208,0,255,0.05);
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .card:hover { transform: translateY(-8px); box-shadow: 0 25px 70px rgba(157,78,221,0.28); }
+    .card::after {
+      content: ""; position: absolute; inset: -50%; background: radial-gradient(circle at 60% 30%, rgba(208,0,255,0.12), transparent 60%);
+      opacity: 0; transition: opacity 0.6s; pointer-events: none;
+    }
+    .card:hover::after { opacity: 1; }
+
+    .card h2 { color: var(--accent); margin-bottom: 1.6rem; font-size: 1.7rem; display: flex; align-items: center; gap: 0.8rem; }
+
+    .btn {
+      background: linear-gradient(90deg, var(--purple), var(--accent));
+      border: none;
+      color: white;
+      padding: 1rem 2.2rem;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 2rem;
+      box-shadow: 0 8px 25px rgba(208,0,255,0.35);
+      transition: all 0.3s;
+      display: inline-block;
+    }
+    .btn:hover { transform: scale(1.05); box-shadow: 0 12px 35px rgba(208,0,255,0.5); }
+
+    .option {
+      background: rgba(208,0,255,0.06);
+      border: 1px solid rgba(208,0,255,0.22);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin: 1rem 0;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .option:hover, .option.active { background: rgba(208,0,255,0.22); border-color: var(--accent); box-shadow: 0 0 20px rgba(208,0,255,0.3); }
+
+    .slider-container { margin: 2rem 0; }
+    input[type="range"] {
+      width: 100%; height: 10px; border-radius: 5px; background: rgba(208,0,255,0.18);
+      outline: none; appearance: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none; width: 24px; height: 24px; border-radius: 50%;
+      background: var(--accent); cursor: pointer; box-shadow: 0 0 15px var(--accent);
+    }
+
+    .status, .logs { text-align: center; padding: 2rem; }
+    .brain { font-size: 7rem; opacity: 0.75; margin: 1.5rem 0; animation: pulse 4s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 0.75; } 50% { opacity: 0.95; } }
+
+    .logs { background: rgba(0,0,0,0.4); border-radius: 12px; max-height: 320px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.95rem; color: #a0f0c0; text-align: left; padding: 1.5rem; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.8rem; margin: 4rem 0 3rem; }
+    .stat-card {
+      background: rgba(18,0,31,0.65);
+      border: 1px solid rgba(208,0,255,0.18);
+      border-radius: 16px;
+      padding: 1.8rem;
+      text-align: center;
+      position: relative;
+    }
+    .stat-value { font-size: 2.6rem; font-weight: 700; margin: 0.6rem 0; text-shadow: 0 0 15px currentColor; }
+
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+    .chart-container { height: 400px; }
+
+    .version-badge {
+      position: absolute; top: 1rem; right: 1.5rem;
+      background: rgba(0,255,170,0.15);
+      color: var(--green);
+      padding: 0.4rem 1rem;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      border: 1px solid var(--green);
+    }
+
+    @media (max-width: 1200px) { .grid-2, .charts-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Exoplanet AI</div>
+  <nav>
+    <a href="#">Dashboard</a>
+    <a href="#" class="active">Train Model</a>
+    <a href="#">Predict</a>
+    <a href="#">Upload Data</a>
+    <a href="#">Explore</a>
+    <a href="#">Dataset</a>
+  </nav>
+</header>
+
+<main>
+
+  <h1>Train ExoModel v2.4 – 2026 Ensemble</h1>
+  <p class="subtitle">
+    Ensemble: XGBoost + LightGBM + CatBoost + Random Forest + Attention-Augmented NN<br>
+    Trained on latest Kepler KOI + TESS TOI + community-vetted 2026 updates
+  </p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>✦ Training Configuration</h2>
+
+      <div style="margin:1.5rem 0;">
+        <strong>Dataset</strong>
+        <div style="display:flex; gap:1.2rem; margin:1.2rem 0;">
+          <div class="option active">KEPLER KOI<br>(legacy + 2026 reprocessed)</div>
+          <div class="option">TESS TOI<br>(Sector 1–72 + 2026)</div>
+        </div>
+      </div>
+
+      <div class="slider-container">
+        <strong>Test / Validation Split: 22%</strong>
+        <input type="range" min="10" max="40" value="22" step="1" id="splitSlider">
+        <div id="splitValue" style="text-align:center; margin-top:0.6rem; color:var(--accent); font-weight:bold;">22%</div>
+      </div>
+
+      <div style="margin:2rem 0;">
+        <strong>Data Balancing Strategy</strong>
+        <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:1.2rem; margin-top:1rem;">
+          <div class="option active">SMOTE-NC</div>
+          <div class="option">Borderline-SMOTE</div>
+          <div class="option">ADASYN + Tomek</div>
+          <div class="option">None</div>
+        </div>
+      </div>
+
+      <button class="btn" id="startTraining">START TRAINING</button>
+      <div class="version-badge">Model v2.4 – Feb 2026</div>
+    </div>
+
+    <div class="card">
+      <h2>⟳ Training Status & Logs</h2>
+      <div class="status" id="statusDefault">
+        <div class="brain">🧠</div>
+        <p style="font-size:1.6rem; margin:1.5rem 0;">Ready to train<br>Click "START TRAINING"</p>
+      </div>
+
+      <div class="logs" id="trainingLogs" style="display:none;">
+        [2026-02-07 14:32:01] Initializing ensemble...<br>
+        [14:32:05] Loaded 11,248 samples (Kepler+TESS 2026)<br>
+        [14:32:12] Applying SMOTE-NC → 18,920 balanced samples<br>
+        [14:32:45] XGBoost round 1/5 – best iter 380<br>
+        [14:33:10] LightGBM training – early stopping at 420<br>
+        [14:34:02] CatBoost fit complete<br>
+        [14:34:55] Attention NN epoch 18/50 – val_loss: 0.214<br>
+        [14:35:40] Ensemble voting weights optimized<br>
+        [14:36:15] Evaluation complete – awaiting final metrics...
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PERFORMANCE OVERVIEW ─────────────────────────────────────── -->
+  <div style="margin:6rem 0 3rem;">
+    <h1 style="font-size:2.6rem; text-align:center;">Current Model Performance</h1>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Model Status</div><div class="stat-value" style="color:#ffcc00;">Not Trained</div></div>
+    <div class="stat-card"><div class="stat-label">Total Records</div><div class="stat-value" style="color:var(--green);">11,248</div></div>
+    <div class="stat-card"><div class="stat-label">Accuracy</div><div class="stat-value" style="color:var(--text-dim);">—</div></div>
+    <div class="stat-card"><div class="stat-label">ROC AUC</div><div class="stat-value" style="color:var(--text-dim);">—</div></div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="card">
+      <h2>Class Distribution (2026)</h2>
+      <div class="chart-container">
+        <canvas id="donutChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Model Performance Metrics</h2>
+      <div class="chart-container">
+        <canvas id="radarChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// Update slider value display
+document.getElementById('splitSlider').oninput = function() {
+  document.getElementById('splitValue').textContent = this.value + '%';
+};
+
+// Fake training simulation
+document.getElementById('startTraining').onclick = function() {
+  const status = document.getElementById('statusDefault');
+  const logs = document.getElementById('trainingLogs');
+  status.style.display = 'none';
+  logs.style.display = 'block';
+  this.textContent = 'Training...';
+  this.disabled = true;
+  this.style.background = 'linear-gradient(90deg, #555, #777)';
+};
+
+// Donut Chart
+const ctxDonut = document.getElementById('donutChart').getContext('2d');
+new Chart(ctxDonut, {
+  type: 'doughnut',
+  data: {
+    labels: ['False Positive', 'Candidate', 'Confirmed'],
+    datasets: [{
+      data: [45, 26, 29],
+      backgroundColor: ['#ff2d55', '#ffcc00', '#00ffaa'],
+      borderWidth: 2,
+      borderColor: 'rgba(8,0,20,0.9)',
+      cutout: '58%'
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#e8d8ff', font: { size: 15 } } },
+      tooltip: { backgroundColor: 'rgba(18,0,31,0.92)' },
+      title: {
+        display: true,
+        text: 'FALSE POSITIVE 45%',
+        color: '#ff2d55',
+        font: { size: 20, weight: 'bold' },
+        padding: { bottom: 20 }
+      },
+      datalabels: {
+        color: 'white',
+        formatter: (value) => value + '%',
+        font: { weight: 'bold', size: 14 }
+      }
+    }
+  },
+  plugins: [ChartDataLabels]
+});
+
+// Radar Chart (placeholder)
+const ctxRadar = document.getElementById('radarChart').getContext('2d');
+new Chart(ctxRadar, {
+  type: 'radar',
+  data: {
+    labels: ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC', 'MCC'],
+    datasets: [{
+      label: 'Current (Not Trained)',
+      data: [0, 0, 0, 0, 0, 0],
+      backgroundColor: 'rgba(208,0,255,0.15)',
+      borderColor: 'rgba(208,0,255,0.8)',
+      pointBackgroundColor: 'rgba(208,0,255,1)',
+      borderWidth: 3
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      r: { angleLines: { color: 'rgba(255,255,255,0.1)' }, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: '#b090d0' }, pointLabels: { color: '#e8d8ff' } }
+    },
+    plugins: { legend: { display: false } }
+  }
+});
+</script>
+
+<!-- Optional Chart.js datalabels plugin for donut percentages -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+</body>
+</html>
